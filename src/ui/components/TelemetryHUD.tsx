@@ -29,8 +29,8 @@ export const TelemetryHUD = ({ socketUrl }: { socketUrl: string }) => {
     <div className="absolute top-4 right-4 bg-black/80 text-green-400 p-4 border border-green-500/30 rounded font-mono text-sm z-50">
       <div>X: {coords.x}</div>
       <div>Y: {coords.y}</div>
-      <div>Z: {coords.z}</div>
       <div>Plane: {coords.plane}</div>
+      <div className="text-xs text-green-600 mt-1">Grounding: Engine Grid</div>
     </div>
   );
 };
