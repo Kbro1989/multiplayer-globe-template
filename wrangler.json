@@ -6,6 +6,14 @@
   "assets": {
     "directory": "public"
   },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "Globe"
+      ]
+    }
+  ],
   "build": {
     "command": "npx esbuild src/client/index.tsx --bundle --outdir=public/dist --splitting --sourcemap --format=esm"
   },
