@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { InterfaceViewport } from "../../src/ui/components/InterfaceViewport"; // Adjust path as needed
+import { InterfaceViewport } from "../ui/components/InterfaceViewport";
 import { HUD_REGISTRY } from "../../src/ui/HUDRegistry";
 
 function Dashboard() {
