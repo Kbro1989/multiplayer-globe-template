@@ -18,7 +18,7 @@
   "durable_objects": {
     "bindings": [
       {
-        "class_name": "Globe",
+        "class_name": "GlobeV2",
         "name": "Globe"
       }
     ]

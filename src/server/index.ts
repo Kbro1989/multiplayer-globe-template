@@ -8,13 +8,13 @@ type ConnectionState = {
   position: Position;
 };
 
-export class Globe extends Server {
+export class GlobeV2 extends Server {
   private nodes: Record<string, any> = {};
 
   async onStart(): Promise<void> {
     // Load persisted nodes from storage
     this.nodes = (await this.ctx.storage.get<Record<string, any>>("nodes")) || {};
-    console.log(`🧠 Globe initialized with ${Object.keys(this.nodes).length} persisted nodes.`);
+    console.log(`🧠 GlobeV2 initialized with ${Object.keys(this.nodes).length} persisted nodes.`);
   }
 
   onConnect(conn: Connection<ConnectionState>, ctx: ConnectionContext) {
