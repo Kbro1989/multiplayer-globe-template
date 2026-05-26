@@ -6,7 +6,7 @@
   "migrations": [
     {
       "new_sqlite_classes": ["Globe"],
-      "tag": "v1"
+      "tag": "v2"
     }
   ],
   "assets": {
