@@ -15,12 +15,6 @@
   "build": {
     "command": "npx esbuild src/client/index.tsx --bundle --outdir=public/dist --splitting --sourcemap --format=esm"
   },
-  "kv_namespaces": [
-    {
-      "binding": "POG2_GLOBE_KV",
-      "id": "39ca6233f6634efdaa957fa10b598fab"
-    }
-  ],
   "durable_objects": {
     "bindings": [
       {
