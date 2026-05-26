@@ -1,4 +1,5 @@
 {
+  "account_id": "6872653edcee9c791787c1b783173793",
   "compatibility_date": "2025-04-01",
   "main": "src/server/index.ts",
   "name": "multiplayer-globe-pog2",
