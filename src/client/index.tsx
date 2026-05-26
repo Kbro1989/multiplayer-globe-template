@@ -1,149 +1,34 @@
-import "./styles.css";
-
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import createGlobe from "cobe";
-import usePartySocket from "partysocket/react";
+import { InterfaceViewport } from "../../src/ui/components/InterfaceViewport"; // Adjust path as needed
+import { HUD_REGISTRY } from "../../src/ui/HUDRegistry";
 
-// The type of messages we'll be receiving from the server
-import type { OutgoingMessage } from "../shared";
-import type { LegacyRef } from "react";
-
-function App() {
-  // A reference to the canvas element where we'll render the globe
-  const canvasRef = useRef<HTMLCanvasElement>();
-  // The number of markers we're currently displaying
-  const [counter, setCounter] = useState(0);
-  // POG2 Durable State: Telemetry Nodes
+function Dashboard() {
+  const [activeHUDs, setActiveHUDs] = useState<number[]>([1430, 1922]); // Default HUDs (Action Bar, Nav)
   const [nodes, setNodes] = useState<Record<string, any>>({});
-  // A map of marker IDs to their positions
-  // Note that we use a ref because the globe's `onRender` callback
-  // is called on every animation frame, and we don't want to re-render
-  // the component on every frame.
-  const positions = useRef<
-    Map<
-      string,
-      {
-        location: [number, number];
-        size: number;
-      }
-    >
-  >(new Map());
-  // Connect to the PartyServer server
-  const socket = usePartySocket({
-    room: "default",
-    party: "globe",
-    onMessage(evt) {
-      const message = JSON.parse(evt.data as string) as OutgoingMessage;
-      if (message.type === "add-marker") {
-        // Add the marker to our map
-        positions.current.set(message.position.id, {
-          location: [message.position.lat, message.position.lng],
-          size: message.position.id === socket.id ? 0.1 : 0.05,
-        });
-        // Update the counter
-        setCounter((c) => c + 1);
-      } else if (message.type === "remove-marker") {
-        // Remove the marker from our map
-        positions.current.delete(message.id);
-        // Update the counter
-        setCounter((c) => c - 1);
-      } else if (message.type === "state-sync") {
-        // Synchronize the entire node substrate
-        setNodes(message.state.nodes);
-        console.log("🧬 POG2 State Synchronized:", message.state.id);
-      } else if (message.type === "update-node") {
-        // Atomic update for a specific node
-        setNodes((prev) => ({
-          ...prev,
-          [message.nodeId]: message.data,
-        }));
-      }
-    },
-  });
 
+  // Establish MCP/WebSocket bridge here
   useEffect(() => {
-    // The angle of rotation of the globe
-    // We'll update this on every frame to make the globe spin
-    let phi = 0;
-
-    const globe = createGlobe(canvasRef.current as HTMLCanvasElement, {
-      devicePixelRatio: 2,
-      width: 400 * 2,
-      height: 400 * 2,
-      phi: 0,
-      theta: 0,
-      dark: 1,
-      diffuse: 0.8,
-      mapSamples: 16000,
-      mapBrightness: 6,
-      baseColor: [0.3, 0.3, 0.3],
-      markerColor: [0.8, 0.1, 0.1],
-      glowColor: [0.2, 0.2, 0.2],
-      markers: [],
-      opacity: 0.7,
-      onRender: (state) => {
-        // Called on every animation frame.
-        // `state` will be an empty object, return updated params.
-
-        // Get the current positions from our map
-        state.markers = [...positions.current.values()];
-
-        // Rotate the globe
-        state.phi = phi;
-        phi += 0.01;
-      },
-    });
-
-    return () => {
-      globe.destroy();
-    };
+    // In a full implementation, you would connect to the POG2 WebSocket bridge
+    console.log("🧬 POG2 Dashboard Initialized. Connecting to Sovereignty stream...");
   }, []);
 
   return (
-    <div className="App">
-      <h1>Where's everyone at?</h1>
-      {counter !== 0 ? (
-        <p>
-          <b>{counter}</b> {counter === 1 ? "person" : "people"} connected.
-        </p>
-      ) : (
-        <p>&nbsp;</p>
-      )}
-
-      {/* 🧬 POG2 Telemetry Panel */}
-      <div className="telemetry-panel">
-        <h3>🧬 POG2 Telemetry</h3>
-        <div className="node-list">
-          {Object.entries(nodes).length === 0 ? (
-            <div className="node-item empty">Waiting for POG2 pulse...</div>
-          ) : (
-            Object.entries(nodes).map(([id, data]) => (
-              <div key={id} className={`node-item ${data.status || 'active'}`}>
-                <span className="node-id">{id}</span>
-                <span className="node-score">{(data.score || 0).toFixed(2)}</span>
-                <div className="node-details">{data.lastActivity || 'monitoring'}</div>
-              </div>
-            ))
-          )}
-        </div>
+    <div className="dashboard-root">
+      <h1>Sovereign 4-Layer Dashboard</h1>
+      <div className="viewport-container">
+        {activeHUDs.map((id) => (
+          <div key={id} className="hud-layer">
+            <InterfaceViewport interfaceId={id} />
+          </div>
+        ))}
       </div>
-
-      {/* The canvas where we'll render the globe */}
-      <canvas
-        ref={canvasRef as LegacyRef<HTMLCanvasElement>}
-        style={{ width: 400, height: 400, maxWidth: "100%", aspectRatio: 1 }}
-      />
-
-      {/* Let's give some credit */}
-      <p>
-        Powered by <a href="https://cobe.vercel.app/">🌏 Cobe</a>,{" "}
-        <a href="https://www.npmjs.com/package/phenomenon">Phenomenon</a> and{" "}
-        <a href="https://npmjs.com/package/partyserver/">🎈 PartyServer</a>
-      </p>
+      <div className="telemetry-panel">
+        <h3>Agent Pulse</h3>
+        {/* Render telemetry nodes */}
+      </div>
     </div>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(<Dashboard />);
