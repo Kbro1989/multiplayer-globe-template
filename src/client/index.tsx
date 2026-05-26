@@ -25,6 +25,17 @@ function Dashboard() {
       </div>
       <div className="telemetry-panel">
         <h3>Agent Pulse</h3>
+        <button 
+            onClick={() => {
+                console.log('🔮 Triggering Total World Reality Refresh...');
+                // Trigger the bridge interaction to start extraction
+                // Assuming bridge is available as a global or context
+                window.dispatchEvent(new CustomEvent('TRIGGER_MANIFESTATION', { detail: 'total' }));
+            }}
+            className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded"
+        >
+            Reality Refresh
+        </button>
         {/* Render telemetry nodes */}
       </div>
     </div>
