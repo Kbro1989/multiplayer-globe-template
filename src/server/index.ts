@@ -151,9 +151,138 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
+    // === Bestiary Proxy Routes ===
+    if (url.pathname.startsWith('/api/bestiary/')) {
+      const path = url.pathname.replace('/api/bestiary/', '');
+      const search = url.search;
+      const jagexUrl = `https://secure.runescape.com/m=itemdb_rs/bestiary/${path}${search}`;
+
+      try {
+        const res = await fetch(jagexUrl, {
+          headers: {
+            'User-Agent': 'POG2-Sovereign/1.0 (POG2 Pedagogy Engine; RS3 entity enrichment; admin@pog2.internal; +https://github.com/Kbro1989/POG2)',
+            'Accept': 'application/json'
+          },
+          redirect: 'follow'
+        });
+
+        return new Response(res.body, {
+          status: res.status,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Cache-Control': 'max-age=3600'
+          }
+        });
+      } catch (err: any) {
+        return new Response(JSON.stringify({ error: err.message }), {
+          status: 502,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // === GE Proxy Routes ===
+    if (url.pathname.startsWith('/api/ge/')) {
+      const path = url.pathname.replace('/api/ge/', '');
+      const search = url.search;
+      let jagexUrl: string;
+
+      if (path === 'graph.json') {
+        const itemId = url.searchParams.get('item');
+        jagexUrl = `https://secure.runescape.com/m=itemdb_rs/api/graph/${itemId}.json`;
+      } else {
+        jagexUrl = `https://secure.runescape.com/m=itemdb_rs/api/catalogue/${path}${search}`;
+      }
+
+      try {
+        const res = await fetch(jagexUrl, {
+          headers: {
+            'User-Agent': 'POG2-Sovereign/1.0 (POG2 Pedagogy Engine; RS3 entity enrichment; admin@pog2.internal; +https://github.com/Kbro1989/POG2)',
+            'Accept': 'application/json'
+          },
+          redirect: 'follow'
+        });
+
+        return new Response(res.body, {
+          status: res.status,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Cache-Control': 'max-age=3600'
+          }
+        });
+      } catch (err: any) {
+        return new Response(JSON.stringify({ error: err.message }), {
+          status: 502,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // === Player Data Proxy Routes ===
+    if (url.pathname.startsWith('/api/player/')) {
+      const path = url.pathname.replace('/api/player/', '');
+      const search = url.search;
+      let jagexUrl: string;
+
+      if (path === 'runemetrics/profile') {
+        const user = url.searchParams.get('user');
+        if (!user) return new Response('Missing user parameter', { status: 400 });
+        jagexUrl = `https://apps.runescape.com/runemetrics/profile/profile?user=${encodeURIComponent(user)}&activities=20`;
+      } else if (path === 'hiscores/lite') {
+        const player = url.searchParams.get('player');
+        if (!player) return new Response('Missing player parameter', { status: 400 });
+        jagexUrl = `https://secure.runescape.com/m=hiscore/index_lite.ws?player=${encodeURIComponent(player)}`;
+      } else if (path === 'runemetrics/xp-monthly') {
+        const searchName = url.searchParams.get('searchName');
+        const skillid = url.searchParams.get('skillid');
+        if (!searchName || !skillid) return new Response('Missing searchName or skillid', { status: 400 });
+        jagexUrl = `https://apps.runescape.com/runemetrics/xp-monthly?searchName=${encodeURIComponent(searchName)}&skillid=${skillid}`;
+      } else if (path === 'runemetrics/quests') {
+        const user = url.searchParams.get('user');
+        if (!user) return new Response('Missing user parameter', { status: 400 });
+        jagexUrl = `https://apps.runescape.com/runemetrics/quests?user=${encodeURIComponent(user)}`;
+      } else {
+        // Generic player proxy fallback
+        jagexUrl = `https://secure.runescape.com/m=hiscore/${path}${search}`;
+      }
+
+      try {
+        const res = await fetch(jagexUrl, {
+          headers: {
+            'User-Agent': 'POG2-Sovereign/1.0 (POG2 Pedagogy Engine; RS3 player enrichment; admin@pog2.internal; +https://github.com/Kbro1989/POG2)',
+            'Accept': 'application/json'
+          },
+          redirect: 'follow'
+        });
+
+        return new Response(res.body, {
+          status: res.status,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Cache-Control': 'max-age=3600'
+          }
+        });
+      } catch (err: any) {
+        return new Response(JSON.stringify({ error: err.message }), {
+          status: 502,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
     // 🧬 Phase 20: Handle health check BEFORE PartyKit routing
     // This fixes the 404 errors seen in Cloudflare logs
     if (url.pathname.endsWith("/health")) {
+
       return new Response(JSON.stringify({
         status: "healthy",
         timestamp: Date.now(),
